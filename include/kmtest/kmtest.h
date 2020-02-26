@@ -47,12 +47,25 @@
     else if (__LINE__ == curClause.then && reportThen(desc))
 
 #define REQUIRE(expression) \
+    {       \
     ++assertions; \
     if (!(expression)) \
     { \
         KMTEST_ASSERT(#expression, __FILE__, __LINE__, nullptr); \
         ++failures; \
+    }   \
     }
+
+// More macros for google test like asserts
+#define EXPECT_TRUE(x)          REQUIRE(x)
+#define EXPECT_FALSE(x)         REQUIRE(!x)
+#define EXPECT_STREQ(x, y)      REQUIRE(strcmp((x), (y)) == 0)
+#define EXPECT_EQ(x, y)         REQUIRE((x) == (y))
+#define EXPECT_DOUBLE_EQ(x, y)  REQUIRE((x) == (y))
+
+#define KMTEST_ARGS_IMPL        curClause, nextClause, assertions, failures, nextClauseSet
+#define KMTEST_ARGS_DECLARE     kmtest::Clause curClause, kmtest::Clause& nextClause, int& assertions, int& failures, bool nextClauseSet
+
 
 #pragma section("KMTEST$__a", read)
 #pragma section("KMTEST$__m", read)
@@ -186,6 +199,7 @@ namespace kmtest
 }
 
 #ifdef _KERNEL_MODE
+#ifdef STRAIGHT_TEST
 DRIVER_UNLOAD DriverUnload;
 
 inline void DriverUnload(_In_ DRIVER_OBJECT*)
@@ -201,6 +215,7 @@ extern "C" inline NTSTATUS DriverEntry(_In_ DRIVER_OBJECT* driverObject, _In_ PU
     driverObject->DriverUnload = DriverUnload;
     return STATUS_SUCCESS;
 }
+#endif  // STRAIGHT_TEST
 #else
 int main()
 {
